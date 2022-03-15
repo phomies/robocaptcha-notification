@@ -1,7 +1,21 @@
 const express = require('express')
 const app = express()
+const server = require('http').createServer(app);
+const WebSocket = require('ws');
 require('dotenv').config();
 const port = 3000
+
+wss.on('connection', function connection(ws) {
+    console.log('A new client connected');
+    ws.send('Welcome new client!');
+
+    ws.on('message', function message(data) {
+        console.log('received: %s', data);
+        ws.send('Message received: ' + data);
+    });
+
+    ws.send('something');
+});
 
 var AWS = require('aws-sdk');
 AWS.config.update({ region: 'ap-southeast-1' });
@@ -10,7 +24,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!')
 })
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Notification service is listening on port ${port}`)
 })
 
