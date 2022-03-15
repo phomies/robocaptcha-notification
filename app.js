@@ -5,6 +5,8 @@ const WebSocket = require('ws');
 require('dotenv').config();
 const port = 3000
 
+const wss = new WebSocket.Server({ server: server });
+
 wss.on('connection', function connection(ws) {
     console.log('A new client connected');
     ws.send('Welcome new client!');
@@ -14,7 +16,6 @@ wss.on('connection', function connection(ws) {
         ws.send('Message received: ' + data);
     });
 
-    ws.send('something');
 });
 
 var AWS = require('aws-sdk');
