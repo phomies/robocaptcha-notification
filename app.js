@@ -9,15 +9,22 @@ const port = 3000;
 // Websocket Server
 const wss = new WebSocket.Server({ server: server });
 
-wss.on('connection', function connection(ws) {
-    console.log('A new client connected');
+const webSockets = {};
+
+// ws: websocket of client, req: HTTP GET request from client
+wss.on('connection', (ws, req) => {
     ws.send('Welcome new client!');
 
-    ws.on('message', function message(data) {
-        console.log('received: %s', data);
-        ws.send('Message received: ' + data);
-    });
+    // store userId 
+    var userId = req.url.substring(1);
+    webSockets[userId] = ws;
+    console.log('A new client connected with id: ' + userId);
 
+    // on ws close, delete userId from connected websockets
+    ws.on('close', () => {
+        delete webSockets[userId];
+        console.log('ws closed, userId: ' + userId);
+    })
 });
 
 // AWS SQS connection
@@ -63,7 +70,11 @@ const sqsHandler = async function (err, data) {
         const notification = await processNotification(notificationId);
         console.log('found notif: ', notification);
 
-        // TODO: send to frontend
+        // send to frontend if connected
+        if (notification.userId in webSockets) {
+            var websocket = webSockets[notification.userId];
+            websocket.send(JSON.stringify(notification));
+        }
 
         // delete read messages from SQS queue
         var deleteParams = {
