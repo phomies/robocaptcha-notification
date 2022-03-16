@@ -1,10 +1,12 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const server = require('http').createServer(app);
 const WebSocket = require('ws');
+const mongoose = require('mongoose');
 require('dotenv').config();
-const port = 3000
+const port = 3000;
 
+// Websocket Server
 const wss = new WebSocket.Server({ server: server });
 
 wss.on('connection', function connection(ws) {
@@ -18,7 +20,9 @@ wss.on('connection', function connection(ws) {
 
 });
 
+// AWS SQS connection
 var AWS = require('aws-sdk');
+const res = require('express/lib/response');
 AWS.config.update({ region: 'ap-southeast-1' });
 
 app.get('/', (req, res) => {
@@ -47,11 +51,21 @@ var params = {
     WaitTimeSeconds: 0
 };
 
-sqs.receiveMessage(params, function (err, data) {
+sqs.receiveMessage(params, async function (err, data) {
     if (err) {
         console.log("Receive Error", err);
     } else if (data.Messages) {
-        console.log(data.Messages);
+        // console.log(data.Messages);
+        const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body.substring(10,34));
+
+        // query notification from db
+        const notification = await processNotification(notificationId);
+        console.log(notification);
+
+        // TODO: send to frontend
+
+
+        // delete read messages from SQS queue
         var deleteParams = {
             QueueUrl: queueURL,
             ReceiptHandle: data.Messages[0].ReceiptHandle
@@ -65,3 +79,28 @@ sqs.receiveMessage(params, function (err, data) {
         });
     }
 });
+
+// MongoDB connection
+const connectionString = process.env.MONGODB_URL;
+mongoose.connect(connectionString, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
+const notificationSchema = new mongoose.Schema({
+    _id: mongoose.Types.ObjectId,
+    userId: { type: String, ref: 'User' },
+    content: String,
+    read: Boolean,
+    url: String,
+    dateTime: { type: Date, default: Date.now() },
+});
+
+const Notification = mongoose.model('Notification', notificationSchema);
+
+const processNotification = async (notificationId) => {
+
+    var notification = await Notification.findById(notificationId);
+    return notification;
+    
+};
