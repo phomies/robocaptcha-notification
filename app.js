@@ -42,13 +42,13 @@ var params = {
     AttributeNames: [
         "SentTimestamp"
     ],
-    MaxNumberOfMessages: 10,
+    MaxNumberOfMessages: 1,
     MessageAttributeNames: [
         "All"
     ],
     QueueUrl: queueURL,
     VisibilityTimeout: 20,
-    WaitTimeSeconds: 0
+    WaitTimeSeconds: 20
 };
 
 sqs.receiveMessage(params, async function (err, data) {
@@ -56,11 +56,11 @@ sqs.receiveMessage(params, async function (err, data) {
         console.log("Receive Error", err);
     } else if (data.Messages) {
         // console.log(data.Messages);
-        const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body.substring(10,34));
+        const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body.substring(10, 34));
 
         // query notification from db
         const notification = await processNotification(notificationId);
-        console.log(notification);
+        console.log('found notif: ', notification);
 
         // TODO: send to frontend
 
@@ -99,8 +99,6 @@ const notificationSchema = new mongoose.Schema({
 const Notification = mongoose.model('Notification', notificationSchema);
 
 const processNotification = async (notificationId) => {
-
     var notification = await Notification.findById(notificationId);
     return notification;
-    
 };
