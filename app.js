@@ -51,19 +51,19 @@ var params = {
     WaitTimeSeconds: 20
 };
 
-sqs.receiveMessage(params, async function (err, data) {
+const sqsHandler = async function (err, data) {
     if (err) {
         console.log("Receive Error", err);
     } else if (data.Messages) {
-        // console.log(data.Messages);
-        const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body.substring(10, 34));
+        console.log(data.Messages);
+
+        const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body);
 
         // query notification from db
         const notification = await processNotification(notificationId);
         console.log('found notif: ', notification);
 
         // TODO: send to frontend
-
 
         // delete read messages from SQS queue
         var deleteParams = {
@@ -78,7 +78,9 @@ sqs.receiveMessage(params, async function (err, data) {
             }
         });
     }
-});
+    sqs.receiveMessage(params, sqsHandler);
+}
+sqs.receiveMessage(params, sqsHandler);
 
 // MongoDB connection
 const connectionString = process.env.MONGODB_URL;
