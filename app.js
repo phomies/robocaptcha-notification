@@ -29,7 +29,6 @@ wss.on('connection', (ws, req) => {
 
 // AWS SQS connection
 var AWS = require('aws-sdk');
-const res = require('express/lib/response');
 AWS.config.update({ region: 'ap-southeast-1' });
 
 app.get('/', (req, res) => {
@@ -58,12 +57,11 @@ var params = {
     WaitTimeSeconds: 20
 };
 
-const sqsHandler = async function (err, data) {
+const sqsHandler = async (err, data) => {
     if (err) {
-        console.log("Receive Error", err);
+        console.log("Received Error: ", err);
     } else if (data.Messages) {
-        console.log(data.Messages);
-
+        // parse notificationId to ObjectId type
         const notificationId = mongoose.Types.ObjectId(data.Messages[0].Body);
 
         // query notification from db
@@ -81,7 +79,7 @@ const sqsHandler = async function (err, data) {
             QueueUrl: queueURL,
             ReceiptHandle: data.Messages[0].ReceiptHandle
         };
-        sqs.deleteMessage(deleteParams, function (err, data) {
+        sqs.deleteMessage(deleteParams, (err, data) => {
             if (err) {
                 console.log("Delete Error", err);
             } else {
