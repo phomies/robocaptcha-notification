@@ -13,8 +13,6 @@ const webSockets = {};
 
 // ws: websocket of client, req: HTTP GET request from client
 wss.on('connection', (ws, req) => {
-    ws.send('Welcome new client!');
-
     // store userId 
     var userId = req.url.substring(1);
     webSockets[userId] = ws;
@@ -66,10 +64,11 @@ const sqsHandler = async (err, data) => {
 
         // query notification from db
         const notification = await processNotification(notificationId);
-        console.log('found notif: ', notification);
+        console.log('Notification: ', notification);
 
         // send to frontend if connected
         if (notification.userId in webSockets) {
+            console.log('Sending to user id: ', notification.userId);
             var websocket = webSockets[notification.userId];
             websocket.send(JSON.stringify(notification));
         }
