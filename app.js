@@ -4,7 +4,7 @@ const server = require('http').createServer(app);
 const WebSocket = require('ws');
 const mongoose = require('mongoose');
 require('dotenv').config();
-const port = 3000;
+const port = 2999;
 
 // Websocket Server
 const wss = new WebSocket.Server({ server: server });
