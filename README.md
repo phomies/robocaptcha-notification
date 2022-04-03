@@ -1,4 +1,9 @@
 ## RoboCaptcha Notification Microservice
+Allow real-time notifications to reach users currently using the roboCaptcha web app, alerting them of any blocked robo calls detected by our filtering system or any legitimate human callers that successfully 
+passed our verification.
+
+Makes use of Amazon SQS to receive messages from the roboCaptcha service, sends notifications to the 
+user on roboCaptcha frontend web app through a WebSocket connection. 
 
 ### Environment Variables
 | Name                     | Description                                                     |
