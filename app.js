@@ -105,7 +105,7 @@ mongoose.connect(connectionString, {
 const notificationSchema = new mongoose.Schema({
     _id: mongoose.Types.ObjectId,
     userId: { type: String, ref: 'User' },
-    googleProviderUid: String,
+    googleId: String,
     content: String,
     read: Boolean,
     url: String,
