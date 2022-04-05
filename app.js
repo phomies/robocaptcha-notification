@@ -72,6 +72,11 @@ const sqsHandler = async (err, data) => {
             var websocket = webSockets[notification.userId];
             websocket.send(JSON.stringify(notification));
         }
+        if (notification.googleId in webSockets) {
+            console.log('Sending to user id: ', notification.googleId);
+            var websocket = webSockets[notification.googleId];
+            websocket.send(JSON.stringify(notification));
+        }
 
         // delete read messages from SQS queue
         var deleteParams = {
@@ -100,6 +105,7 @@ mongoose.connect(connectionString, {
 const notificationSchema = new mongoose.Schema({
     _id: mongoose.Types.ObjectId,
     userId: { type: String, ref: 'User' },
+    googleProviderUid: String,
     content: String,
     read: Boolean,
     url: String,
